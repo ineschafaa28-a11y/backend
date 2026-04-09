@@ -5,6 +5,7 @@ import com.Back.BackEnd.service.FlightService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import com.Back.BackEnd.model.FlightStatus;
 
 import java.util.List;
 import java.util.Optional;
@@ -50,7 +51,7 @@ public class FlightController {
     // Mettre à jour le statut d’un vol
     @PutMapping("/{id}/status")
     public ResponseEntity<Flight> updateFlightStatus(@PathVariable Long id,
-                                                     @RequestParam String status) {
+                                                     @RequestParam FlightStatus status) {
         try {
             Flight updatedFlight = flightService.updateFlightStatus(id, status);
             return ResponseEntity.ok(updatedFlight);

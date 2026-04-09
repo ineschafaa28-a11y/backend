@@ -1,20 +1,23 @@
 package com.Back.BackEnd.repository;
 
 import com.Back.BackEnd.model.Flight;
+import com.Back.BackEnd.model.FlightStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+
 import java.util.List;
+import java.util.Optional;
 
 public interface FlightRepository extends JpaRepository<Flight, Long> {
 
-    // Recherche d’un vol par son numéro
-    Flight findByFlightNumber(String flightNumber);
+    Optional<Flight> findByFlightNumber(String flightNumber);
 
-    // Recherche des vols par statut (on-time, delayed, cancelled)
-    List<Flight> findByStatus(String status);
+    List<Flight> findByStatus(FlightStatus status);
 
-    // Recherche des vols par ville/aéroport de départ
     List<Flight> findByDeparture(String departure);
 
-    // Recherche des vols par ville/aéroport d’arrivée
     List<Flight> findByArrival(String arrival);
+
+    List<Flight> findByDepartureAndArrival(String departure, String arrival);
+
+    boolean existsByFlightNumber(String flightNumber);
 }

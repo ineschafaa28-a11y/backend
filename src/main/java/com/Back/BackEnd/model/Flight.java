@@ -3,28 +3,37 @@ package com.Back.BackEnd.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.time.LocalDateTime;
+
 @Entity
 @Data
 @Table(name = "flights")
 public class Flight {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY) // clé primaire auto-incrémentée
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column(nullable = false, unique = true)
-    private String flightNumber;   // Numéro de vol (ex: AH1234)
+    private String flightNumber;
 
     @Column(nullable = false)
-    private String departure;      // Ville/aéroport de départ
+    private String departure;
 
     @Column(nullable = false)
-    private String arrival;        // Ville/aéroport d’arrivée
+    private String arrival;
 
     @Column(nullable = false)
-    private String status;         // Statut du vol (on-time, delayed, cancelled)
+    private LocalDateTime departureTime;
 
-    private String gate;           // Porte d’embarquement (optionnel)
+    @Column(nullable = false)
+    private LocalDateTime arrivalTime;
 
-    private String scheduledTime;  // Heure prévue (optionnel)
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private FlightStatus status;
+
+    private String gate;
+
+    private String terminal;
 }

@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 import java.util.Optional;
+import com.Back.BackEnd.model.FlightStatus;
 
 @Service
 public class FlightService {
@@ -31,18 +32,16 @@ public class FlightService {
 
     // Récupérer un vol par son numéro
     public Flight getFlightByNumber(String flightNumber) {
-        return flightRepository.findByFlightNumber(flightNumber);
+        return flightRepository.findByFlightNumber(flightNumber)
+                .orElseThrow(() -> new IllegalArgumentException("Vol introuvable"));
     }
 
     // Mettre à jour le statut d’un vol
-    public Flight updateFlightStatus(Long id, String status) {
-        Optional<Flight> flightOpt = flightRepository.findById(id);
-        if (flightOpt.isPresent()) {
-            Flight flight = flightOpt.get();
-            flight.setStatus(status);
-            return flightRepository.save(flight);
-        }
-        throw new RuntimeException("Vol introuvable !");
+    public Flight updateFlightStatus(Long id, FlightStatus status) {
+        Flight flight = flightRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vol introuvable"));
+        flight.setStatus(status);
+        return flightRepository.save(flight);
     }
 
     // Supprimer un vol
