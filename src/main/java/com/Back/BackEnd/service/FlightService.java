@@ -33,9 +33,9 @@ public class FlightService {
 
         Flight savedFlight = flightRepository.save(flight);
 
+
         // convertir ENTITY → DTO
         FlightResponseDTO response = new FlightResponseDTO();
-
         response.setId(savedFlight.getId());
         response.setFlightNumber(savedFlight.getFlightNumber());
         response.setDeparture(savedFlight.getDeparture());
@@ -58,73 +58,83 @@ public class FlightService {
     }
 
     // Récupérer un vol par son ID
-    public Flight getFlightById(Long id) {
-        return flightRepository.findById(id)
+    public FlightResponseDTO  getFlightById(Long id) {
+        Flight flight = flightRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vol introuvable avec l'id : " + id));
+        return mapToResponseDTO(flight);
     }
 
     // Récupérer un vol par son numéro
-    public Flight getFlightByNumber(String flightNumber) {
-        return flightRepository.findByFlightNumber(flightNumber)
+    public FlightResponseDTO getFlightByNumber(String flightNumber) {
+        Flight flight = flightRepository.findByFlightNumber(flightNumber)
                 .orElseThrow(() -> new IllegalArgumentException("Vol introuvable avec le numéro : " + flightNumber));
+        return mapToResponseDTO(flight);
     }
 
     // Rechercher des vols
-    public List<Flight> searchFlights(String departure, String arrival, FlightStatus status) {
+    public List<FlightResponseDTO> searchFlights(String departure, String arrival, FlightStatus status) {
+        List<Flight> flights;
+
         if (departure != null && !departure.isBlank() && arrival != null && !arrival.isBlank()) {
-            return flightRepository.findByDepartureAndArrival(departure, arrival);
+            flights = flightRepository.findByDepartureAndArrival(departure, arrival);
+        } else if (departure != null && !departure.isBlank()) {
+            flights = flightRepository.findByDeparture(departure);
+        } else if (arrival != null && !arrival.isBlank()) {
+            flights = flightRepository.findByArrival(arrival);
+        } else if (status != null) {
+            flights = flightRepository.findByStatus(status);
+        } else {
+            flights = flightRepository.findAll();
         }
 
-        if (departure != null && !departure.isBlank()) {
-            return flightRepository.findByDeparture(departure);
-        }
-
-        if (arrival != null && !arrival.isBlank()) {
-            return flightRepository.findByArrival(arrival);
-        }
-
-        if (status != null) {
-            return flightRepository.findByStatus(status);
-        }
-
-        return flightRepository.findAll();
+        return flights.stream()
+                .map(this::mapToResponseDTO)
+                .toList();
     }
 
     // Mettre à jour complètement un vol
-    public Flight updateFlight(Long id, Flight updatedFlight) {
-        Flight existingFlight = getFlightById(id);
+    public FlightResponseDTO updateFlight(Long id, FlightRequestDTO dto) {
+        Flight existingFlight = flightRepository.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Vol introuvable avec l'id :" + id));
 
-        existingFlight.setFlightNumber(updatedFlight.getFlightNumber());
-        existingFlight.setDeparture(updatedFlight.getDeparture());
-        existingFlight.setArrival(updatedFlight.getArrival());
-        existingFlight.setDepartureTime(updatedFlight.getDepartureTime());
-        existingFlight.setArrivalTime(updatedFlight.getArrivalTime());
-        existingFlight.setStatus(updatedFlight.getStatus());
-        existingFlight.setGate(updatedFlight.getGate());
-        existingFlight.setTerminal(updatedFlight.getTerminal());
+
+
+        existingFlight.setFlightNumber(dto.getFlightNumber());
+        existingFlight.setDeparture(dto.getDeparture());
+        existingFlight.setArrival(dto.getArrival());
+        existingFlight.setDepartureTime(dto.getDepartureTime());
+        existingFlight.setArrivalTime(dto.getArrivalTime());
+        existingFlight.setStatus(dto.getStatus());
+        existingFlight.setGate(dto.getGate());
+        existingFlight.setTerminal(dto.getTerminal());
 
         validateFlight(existingFlight);
 
-        Flight flightWithSameNumber = flightRepository.findByFlightNumber(updatedFlight.getFlightNumber())
+        Flight flightWithSameNumber = flightRepository.findByFlightNumber(dto.getFlightNumber())
                 .orElse(null);
 
         if (flightWithSameNumber != null && !flightWithSameNumber.getId().equals(id)) {
             throw new IllegalArgumentException("Un autre vol utilise déjà ce numéro");
         }
 
-        return flightRepository.save(existingFlight);
+        Flight updated = flightRepository.save(existingFlight);
+        return mapToResponseDTO(updated);
     }
 
     // Mettre à jour seulement le statut
-    public Flight updateFlightStatus(Long id, FlightStatus status) {
-        Flight flight = getFlightById(id);
+    public FlightResponseDTO  updateFlightStatus(Long id, FlightStatus status) {
+        Flight flight = flightRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("Vol introuvable avec l'id :" + id));
         flight.setStatus(status);
-        return flightRepository.save(flight);
+
+        Flight updated = flightRepository.save(flight);
+        return mapToResponseDTO(updated);
     }
 
     // Supprimer un vol
     public void deleteFlight(Long id) {
-        Flight flight = getFlightById(id);
+        Flight flight = flightRepository.findById(id)
+                        .orElseThrow(() -> new IllegalArgumentException("Vol introuvable avec l'id :" + id));
         flightRepository.delete(flight);
     }
 
