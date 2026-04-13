@@ -1,134 +1,23 @@
-package com.Back.BackEnd.service;
+package com.Back.BackEnd.repository;
 
 import com.Back.BackEnd.model.Flight;
 import com.Back.BackEnd.model.FlightStatus;
-import com.Back.BackEnd.repository.FlightRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
+import java.util.Optional;
 
-@Service
-public class FlightService {
+public interface FlightRepository extends JpaRepository<Flight, Long> {
 
-    @Autowired
-    private FlightRepository flightRepository;
+    Optional<Flight> findByFlightNumber(String flightNumber);
 
-    // Ajouter un nouveau vol
-    public Flight addFlight(Flight flight) {
-        validateFlight(flight);
+    List<Flight> findByStatus(FlightStatus status);
 
-        if (flightRepository.existsByFlightNumber(flight.getFlightNumber())) {
-            throw new IllegalArgumentException("Un vol avec ce numéro existe déjà");
-        }
+    List<Flight> findByDeparture(String departure);
 
-        return flightRepository.save(flight);
-    }
+    List<Flight> findByArrival(String arrival);
 
-    // Récupérer tous les vols
-    public List<Flight> getAllFlights() {
-        return flightRepository.findAll();
-    }
+    List<Flight> findByDepartureAndArrival(String departure, String arrival);
 
-    // Récupérer un vol par son ID
-    public Flight getFlightById(Long id) {
-        return flightRepository.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Vol introuvable avec l'id : " + id));
-    }
-
-    // Récupérer un vol par son numéro
-    public Flight getFlightByNumber(String flightNumber) {
-        return flightRepository.findByFlightNumber(flightNumber)
-                .orElseThrow(() -> new IllegalArgumentException("Vol introuvable avec le numéro : " + flightNumber));
-    }
-
-    // Rechercher des vols
-    public List<Flight> searchFlights(String departure, String arrival, FlightStatus status) {
-        if (departure != null && !departure.isBlank() && arrival != null && !arrival.isBlank()) {
-            return flightRepository.findByDepartureAndArrival(departure, arrival);
-        }
-
-        if (departure != null && !departure.isBlank()) {
-            return flightRepository.findByDeparture(departure);
-        }
-
-        if (arrival != null && !arrival.isBlank()) {
-            return flightRepository.findByArrival(arrival);
-        }
-
-        if (status != null) {
-            return flightRepository.findByStatus(status);
-        }
-
-        return flightRepository.findAll();
-    }
-
-    // Mettre à jour complètement un vol
-    public Flight updateFlight(Long id, Flight updatedFlight) {
-        Flight existingFlight = getFlightById(id);
-
-        existingFlight.setFlightNumber(updatedFlight.getFlightNumber());
-        existingFlight.setDeparture(updatedFlight.getDeparture());
-        existingFlight.setArrival(updatedFlight.getArrival());
-        existingFlight.setDepartureTime(updatedFlight.getDepartureTime());
-        existingFlight.setArrivalTime(updatedFlight.getArrivalTime());
-        existingFlight.setStatus(updatedFlight.getStatus());
-        existingFlight.setGate(updatedFlight.getGate());
-        existingFlight.setTerminal(updatedFlight.getTerminal());
-
-        validateFlight(existingFlight);
-
-        Flight flightWithSameNumber = flightRepository.findByFlightNumber(updatedFlight.getFlightNumber())
-                .orElse(null);
-
-        if (flightWithSameNumber != null && !flightWithSameNumber.getId().equals(id)) {
-            throw new IllegalArgumentException("Un autre vol utilise déjà ce numéro");
-        }
-
-        return flightRepository.save(existingFlight);
-    }
-
-    // Mettre à jour seulement le statut
-    public Flight updateFlightStatus(Long id, FlightStatus status) {
-        Flight flight = getFlightById(id);
-        flight.setStatus(status);
-        return flightRepository.save(flight);
-    }
-
-    // Supprimer un vol
-    public void deleteFlight(Long id) {
-        Flight flight = getFlightById(id);
-        flightRepository.delete(flight);
-    }
-
-    // Validation métier
-    private void validateFlight(Flight flight) {
-        if (flight.getFlightNumber() == null || flight.getFlightNumber().isBlank()) {
-            throw new IllegalArgumentException("Le numéro de vol est obligatoire");
-        }
-
-        if (flight.getDeparture() == null || flight.getDeparture().isBlank()) {
-            throw new IllegalArgumentException("Le lieu de départ est obligatoire");
-        }
-
-        if (flight.getArrival() == null || flight.getArrival().isBlank()) {
-            throw new IllegalArgumentException("Le lieu d’arrivée est obligatoire");
-        }
-
-        if (flight.getDepartureTime() == null) {
-            throw new IllegalArgumentException("L’heure de départ est obligatoire");
-        }
-
-        if (flight.getArrivalTime() == null) {
-            throw new IllegalArgumentException("L’heure d’arrivée est obligatoire");
-        }
-
-        if (flight.getStatus() == null) {
-            throw new IllegalArgumentException("Le statut du vol est obligatoire");
-        }
-
-        if (flight.getArrivalTime().isBefore(flight.getDepartureTime())) {
-            throw new IllegalArgumentException("L’heure d’arrivée ne peut pas être avant l’heure de départ");
-        }
-    }
+    boolean existsByFlightNumber(String flightNumber);
 }
