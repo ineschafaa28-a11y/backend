@@ -96,7 +96,7 @@ public class FlightService {
     public FlightResponseDTO updateFlight(Long id, FlightRequestDTO dto) {
         Flight existingFlight = flightRepository.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Vol introuvable avec l'id :" + id));
-
+       
 
 
         existingFlight.setFlightNumber(dto.getFlightNumber());

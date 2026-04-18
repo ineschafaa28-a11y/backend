@@ -1,11 +1,10 @@
 package com.Back.BackEnd.model;
 
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.GenerationType;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 
 @Entity
+@Table(name = "users")
+
 public class User {
 
     @Id
